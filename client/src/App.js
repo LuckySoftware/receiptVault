@@ -19,7 +19,7 @@ const AuthLoginForm = ({ onLogin, onNavigateToRegister }) => {
 
   const handleLogin = () => {
     if (!username || !password) {
-      setError('¡Échale ganas! Ambos campos son obligatorios.');
+      setError('Ambos campos son obligatorios.');
       return;
     }
     setError('');
@@ -28,7 +28,7 @@ const AuthLoginForm = ({ onLogin, onNavigateToRegister }) => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-3xl font-bold text-center text-gray-800">¡Bienvenido de nuevo!</h2>
+      <h2 className="text-3xl font-bold text-center text-gray-800">Bienvenido a ReceiptVault</h2>
       {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative" role="alert">{error}</div>}
       <div>
         <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="username">
@@ -65,7 +65,7 @@ const AuthLoginForm = ({ onLogin, onNavigateToRegister }) => {
       <p className="text-center text-gray-600 text-sm">
         ¿No tienes cuenta?{' '}
         <button onClick={onNavigateToRegister} className="text-black font-semibold hover:underline">
-          ¡Regístrate aquí!
+          Registrarse
         </button>
       </p>
     </div>
@@ -80,7 +80,7 @@ const AuthRegisterForm = ({ onRegister, onNavigateToLogin }) => {
 
   const handleRegister = () => {
     if (!username || !password) {
-      setError('¡No te rajes! Ambos campos son obligatorios.');
+      setError('Ambos campos son obligatorios.');
       return;
     }
     setError('');
@@ -89,7 +89,7 @@ const AuthRegisterForm = ({ onRegister, onNavigateToLogin }) => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-3xl font-bold text-center text-gray-800">¡Crea tu cuenta!</h2>
+      <h2 className="text-3xl font-bold text-center text-gray-800">Crear Cuenta</h2>
       {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative" role="alert">{error}</div>}
       <div>
         <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="reg-username">
@@ -126,7 +126,7 @@ const AuthRegisterForm = ({ onRegister, onNavigateToLogin }) => {
       <p className="text-center text-gray-600 text-sm">
         ¿Ya tienes cuenta?{' '}
         <button onClick={onNavigateToLogin} className="text-black font-semibold hover:underline">
-          ¡Inicia Sesión!
+          Inicia Sesión
         </button>
       </p>
     </div>
@@ -139,7 +139,7 @@ const DashboardHeader = ({ username, onLogout }) => {
     <header className="w-full bg-white shadow-md p-4 flex justify-between items-center rounded-b-2xl">
       <h1 className="text-2xl font-bold text-gray-800">ReceiptVault</h1>
       <div className="flex items-center space-x-4">
-        <span className="text-gray-700 font-medium hidden sm:block">¡Qué onda, {username}!</span>
+        <span className="text-gray-700 font-medium hidden sm:block">Hola, {username}</span>
         <button
           onClick={onLogout}
           className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors font-semibold"
@@ -159,7 +159,7 @@ const DashboardReceiptList = ({ receipts, onDownloadReceipt, isAdminView }) => {
         {isAdminView ? 'Todos los Recibos del Sistema' : 'Mis Recibos'}
       </h3>
       {receipts.length === 0 ? (
-        <p className="text-gray-600 text-center py-8">¡Aún no hay recibos por aquí! Sube el primero.</p>
+        <p className="text-gray-600 text-center py-8">Aún no hay recibos, sube el primero</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -279,7 +279,7 @@ const DashboardUploadForm = ({ onUploadReceipt }) => {
             type="text"
             id="receipt-name"
             className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black transition"
-            placeholder="Ej. Recibo de Supermercado"
+            placeholder="Ej. Recibo ..."
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
@@ -308,10 +308,9 @@ const DashboardUploadForm = ({ onUploadReceipt }) => {
             onChange={(e) => setCategory(e.target.value)}
           >
             <option value="">Selecciona una categoría</option>
-            <option value="Alimentos">Alimentos</option>
-            <option value="Transporte">Transporte</option>
-            <option value="Servicios">Servicios</option>
-            <option value="Entretenimiento">Entretenimiento</option>
+            <option value="Sueldo">Sueldo</option>
+            <option value="Aguinaldo">Aguinaldo</option>
+            <option value="SalarioVacacional">Salario vacacional</option>
             <option value="Otros">Otros</option>
           </select>
         </div>
@@ -387,9 +386,9 @@ const DashboardPage = ({ user, onLogout }) => {
   useEffect(() => {
     // Simulate API call to fetch receipts
     const fetchedReceipts = [
-      { id: 1, name: 'Supermercado', date: '2023-01-15', amount: 75.50, category: 'Alimentos', userId: 'user1', username: 'user' },
-      { id: 2, name: 'Gasolina', date: '2023-01-10', amount: 40.00, category: 'Transporte', userId: 'user1', username: 'user' },
-      { id: 3, name: 'Cena', date: '2023-01-05', amount: 120.00, category: 'Alimentos', userId: 'user2', username: 'admin' },
+      { id: 1, name: 'Supermercado', date: '2023-01-15', amount: 75.50, category: 'Sueldo', userId: 'user1', username: 'user' },
+      { id: 2, name: 'Gasolina', date: '2023-01-10', amount: 40.00, category: 'SalarioVacacional', userId: 'user1', username: 'user' },
+      { id: 3, name: 'Cena', date: '2023-01-05', amount: 120.00, category: 'Aguinaldo', userId: 'user2', username: 'admin' },
     ];
 
     if (user.isAdmin && isAdminView) {
