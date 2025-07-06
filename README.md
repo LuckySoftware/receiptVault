@@ -1,113 +1,78 @@
-# ReceiptVault Fullstack Application
+# ReceiptVault
 
-This project is a fullstack application with a React frontend and a Node.js/Express backend.
+Aplicación para gestionar y almacenar recibos digitales con control de roles (administrador y usuario).
 
-## Project Structure
+## Estructura del Proyecto
 
-- `client/`: Contains the React frontend application.
-- `server/`: Contains the Node.js/Express backend API.
+- `client/`: Frontend React con TailwindCSS
+- `server/`: Backend Express con almacenamiento de archivos
+- `components/`: Componentes React reutilizables
 
-## Getting Started
+## Características
 
-Follow these instructions to set up and run the project locally.
+- Autenticación de usuarios con roles (admin/user)
+- Subida de recibos en PDF (solo administradores)
+- Visualización de recibos según rol
+- Descarga de recibos
+- Almacenamiento de metadatos en base de datos SQL
+- Almacenamiento de archivos en disco
 
-### Prerequisites
+## Requisitos
 
-- Node.js (LTS version recommended)
+- Node.js (versión LTS recomendada)
 - npm (Node Package Manager)
-- MongoDB (for the backend database)
+- MySQL o MariaDB (para la base de datos)
 
-### Installation
+### Instalación
 
-1.  **Clone the repository:**
+#### Backend
 
-    ```bash
-    git clone <your-repository-url>
-    cd receiptvault
-    ```
-
-2.  **Backend Setup:**
-
-    Navigate to the `server` directory and install dependencies:
-
-    ```bash
-    cd server
-    npm install
-    ```
-
-3.  **Frontend Setup:**
-
-    Navigate to the `client` directory and install dependencies:
-
-    ```bash
-    cd ../client
-    npm install
-    ```
-
-### Environment Variables
-
-Create a `.env` file in the `server/` directory with the following content:
-
-```
-PORT=5000
-MONGODB_URI=your_mongodb_connection_string_here
+```bash
+cd server
+npm install
+# Configurar variables de entorno en .env
+npm run dev
 ```
 
--   `PORT`: The port on which the backend server will run (e.g., `5000`).
--   `MONGODB_URI`: Your MongoDB connection string. Replace `your_mongodb_connection_string_here` with your actual MongoDB URI (e.g., `mongodb://localhost:27017/receiptvault` or a cloud-based URI).
+#### Frontend
 
-### Running the Application
+```bash
+cd client
+npm install
+npm start
+```
 
-To run both the frontend and backend concurrently, you can use the `dev` script from the root of the project (after installing `concurrently` and `nodemon` globally or as dev dependencies).
+## Uso
 
-1.  **Install `concurrently` (if not already installed):**
+- **Administrador**: Puede subir, ver y descargar todos los recibos
+  - Usuario: `admin`
+  - Contraseña: `admin`
 
-    ```bash
-    npm install -g concurrently # or npm install concurrently --save-dev in the root
-    ```
+- **Usuario**: Solo puede ver y descargar sus propios recibos
+  - Usuario: `user`
+  - Contraseña: `password`
 
-2.  **From the project root directory (`receiptvault/`), run the combined development script:**
 
-    ```bash
-    npm run dev
-    ```
 
-    This script will:
-    -   Start the backend server using `nodemon` (for automatic restarts on code changes).
-    -   Start the React development server.
 
-### Individual Scripts
 
--   **Backend (from `server/` directory):**
 
-    ```bash
-    npm start   # Starts the server
-    npm run dev # Starts the server with nodemon
-    ```
 
--   **Frontend (from `client/` directory):**
 
-    ```bash
-    npm start   # Starts the React development server
-    ```
 
-## Database Connection
 
-The backend is configured to connect to MongoDB. Ensure your `MONGODB_URI` in `server/.env` is correctly set. You can use a local MongoDB instance or a cloud service like MongoDB Atlas.
+## Configuración de la Base de Datos
 
-Example MongoDB URI:
+El backend se conecta a MySQL/MariaDB usando la configuración proporcionada en el archivo `.env`. Asegúrate de que tu servidor de base de datos esté en funcionamiento.
 
--   **Local:** `mongodb://localhost:27017/receiptvault`
--   **MongoDB Atlas:** `mongodb+srv://<username>:<password>@<cluster-name>.mongodb.net/<database-name>?retryWrites=true&w=majority`
+## Endpoints de la API
 
-## API Endpoints (Planned)
+La API del backend proporciona los siguientes endpoints:
 
--   `POST /api/auth/register`: User registration
--   `POST /api/auth/login`: User login
--   `GET /api/receipts`: Get all receipts (user-specific or admin)
--   `POST /api/receipts`: Upload a new receipt
--   `GET /api/receipts/:id/download`: Download a specific receipt
+- `GET /api/receipts`: Obtener recibos (filtrados según el rol del usuario).
+- `POST /api/receipts`: Crear un nuevo recibo (solo administradores).
+- `GET /api/receipts/:id/download`: Descargar un recibo específico.
 
-## Contributing
+## Licencia
 
-Feel free to contribute to this project. Please follow standard Git workflow practices.
+Este proyecto está licenciado bajo la Licencia MIT.

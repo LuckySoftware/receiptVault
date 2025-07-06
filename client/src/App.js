@@ -159,7 +159,9 @@ const DashboardReceiptList = ({ receipts, onDownloadReceipt, isAdminView }) => {
         {isAdminView ? 'Todos los Recibos del Sistema' : 'Mis Recibos'}
       </h3>
       {receipts.length === 0 ? (
-        <p className="text-gray-600 text-center py-8">Aún no hay recibos, sube el primero</p>
+        <p className="text-gray-600 text-center py-8">
+          {isAdminView ? 'Aún no hay recibos, sube el primero' : 'Aún no hay recibos disponibles'}
+        </p>
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -344,18 +346,33 @@ const DashboardAdminControls = ({ onToggleAdminView }) => {
 const AuthPage = ({ onLoginSuccess }) => {
   const [isRegister, setIsRegister] = useState(false);
 
-  const handleLogin = (username, password) => {
+  const handleLogin = async (username, password) => {
     console.log('Login:', username, password);
-    // Simulate API call
-    setTimeout(() => {
-      if (username === 'user' && password === 'password') {
-        onLoginSuccess({ username, isAdmin: false });
-      } else if (username === 'admin' && password === 'admin') {
-        onLoginSuccess({ username, isAdmin: true });
-      } else {
-        alert('Credenciales incorrectas. Intenta de nuevo.');
+    try {
+      const response = await fetch('http://localhost:5001/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password }),
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al iniciar sesión');
       }
-    }, 1000);
+      
+      const userData = await response.json();
+      onLoginSuccess({
+        id: userData.id,
+        username: userData.username,
+        isAdmin: userData.isAdmin
+      });
+    } catch (error) {
+      console.error('Error de login:', error);
+      alert('Credenciales incorrectas. Intenta de nuevo.');
+    }
   };
 
   const handleRegister = (username, password) => {
@@ -384,33 +401,137 @@ const DashboardPage = ({ user, onLogout }) => {
   const [isAdminView, setIsAdminView] = useState(false);
 
   useEffect(() => {
-    // Simulate API call to fetch receipts
-    const fetchedReceipts = [
-      { id: 1, name: 'Supermercado', date: '2023-01-15', amount: 75.50, category: 'Sueldo', userId: 'user1', username: 'user' },
-      { id: 2, name: 'Gasolina', date: '2023-01-10', amount: 40.00, category: 'SalarioVacacional', userId: 'user1', username: 'user' },
-      { id: 3, name: 'Cena', date: '2023-01-05', amount: 120.00, category: 'Aguinaldo', userId: 'user2', username: 'admin' },
-    ];
-
-    if (user.isAdmin && isAdminView) {
-      setReceipts(fetchedReceipts);
-    } else {
-      setReceipts(fetchedReceipts.filter(r => r.username === user.username));
-    }
+    // Función para obtener recibos del backend
+    const fetchReceipts = async () => {
+      try {
+        // Obtener token (ID de usuario) del localStorage
+        const userData = JSON.parse(localStorage.getItem('user'));
+        const token = userData.id;
+        
+        // Realizar solicitud al backend
+        const response = await fetch('http://localhost:5001/api/receipts', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
+        });
+        
+        if (!response.ok) {
+          throw new Error('Error al obtener los recibos');
+        }
+        
+        const data = await response.json();
+        
+        // Filtrar según el rol y vista
+        if (user.isAdmin && isAdminView) {
+          setReceipts(data);
+        } else {
+          setReceipts(data.filter(r => r.username === user.username));
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        // Usar datos de respaldo en caso de error
+        const backupReceipts = [
+          { id: 1, name: 'Supermercado', date: '2023-01-15', amount: 75.50, category: 'Sueldo', userId: 'user1', username: 'user' },
+          { id: 2, name: 'Gasolina', date: '2023-01-10', amount: 40.00, category: 'SalarioVacacional', userId: 'user1', username: 'user' },
+          { id: 3, name: 'Cena', date: '2023-01-05', amount: 120.00, category: 'Aguinaldo', userId: 'user2', username: 'admin' },
+        ];
+        
+        if (user.isAdmin && isAdminView) {
+          setReceipts(backupReceipts);
+        } else {
+          setReceipts(backupReceipts.filter(r => r.username === user.username));
+        }
+      }
+    };
+    
+    fetchReceipts();
   }, [user, isAdminView]);
 
-  const handleUploadReceipt = (newReceipt) => {
-    console.log('Uploading:', newReceipt);
-    // Simulate API call
-    setTimeout(() => {
-      const id = receipts.length > 0 ? Math.max(...receipts.map(r => r.id)) + 1 : 1;
-      setReceipts(prev => [...prev, { ...newReceipt, id, date: new Date().toISOString().split('T')[0], userId: user.userId || 'userX', username: user.username }]);
-      alert('Recibo subido con éxito!');
-    }, 1000);
-  };
+const handleUploadReceipt = async (file, name, amount, category) => {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('name', name);
+    formData.append('amount', amount);
+    formData.append('category', category);
 
-  const handleDownloadReceipt = (id) => {
+    const response = await fetch('http://localhost:5001/api/receipts', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        // ⚠️ NO INCLUYAS Content-Type, fetch lo gestiona por FormData automáticamente
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Error al subir el recibo: ${errorData.message || response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log("Recibo subido correctamente:", data);
+  } catch (error) {
+    console.error("Error:", error);
+    setError(error.message || 'Error al subir el recibo');
+  }
+};
+
+
+  const handleDownloadReceipt = async (id) => {
     console.log('Downloading receipt', id);
-    alert(`Descargando recibo ${id}... (simulado)`);
+    try {
+      // Obtener token (ID de usuario) del localStorage
+      const userData = JSON.parse(localStorage.getItem('user'));
+      const token = userData.id;
+      
+      // Realizar solicitud al backend para descargar el recibo
+      const response = await fetch(`http://localhost:5001/api/receipts/${id}/download`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        let errorMessage = 'Error desconocido al subir el recibo.';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (jsonError) {
+          // Si la respuesta no es JSON, usar el estado de la respuesta
+          errorMessage = `Error al subir el recibo: ${response.status} ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+      
+      // Crear un blob a partir de la respuesta
+      const blob = await response.blob();
+      
+      // Crear una URL para el blob
+      const url = window.URL.createObjectURL(blob);
+      
+      // Crear un enlace temporal para descargar el archivo
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `recibo-${id}.pdf`;
+      
+      // Añadir el enlace al documento y hacer clic en él
+      document.body.appendChild(a);
+      a.click();
+      
+      // Limpiar
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al descargar el recibo: ' + error.message);
+    }
   };
 
   return (
@@ -420,7 +541,9 @@ const DashboardPage = ({ user, onLogout }) => {
         {user.isAdmin && (
           <DashboardAdminControls onToggleAdminView={() => setIsAdminView(prev => !prev)} />
         )}
-        <DashboardUploadForm onUploadReceipt={handleUploadReceipt} />
+        {user.isAdmin && (
+          <DashboardUploadForm onUploadReceipt={handleUploadReceipt} />
+        )}
         <DashboardReceiptList
           receipts={receipts}
           onDownloadReceipt={handleDownloadReceipt}

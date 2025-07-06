@@ -1,0 +1,17 @@
+# Dependencias
+node_modules/
+
+# Archivos de entorno
+.env
+
+# Directorio de uploads
+uploads/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
